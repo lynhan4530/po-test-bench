@@ -10,7 +10,7 @@ const SIGNOFF_MARKERS = {
   qa: '[QA SIGN-OFF]',
 } as const
 
-function toGeminiMessages(history: Message[]) {
+export function toGeminiMessages(history: Message[]) {
   const result: { role: 'user' | 'model'; parts: [{ text: string }] }[] = []
 
   for (const msg of history) {
