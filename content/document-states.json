@@ -1,0 +1,20 @@
+[
+  {
+    "id": "ds-underdocumented",
+    "name": "Underdocumented",
+    "label": "Only a brief exists",
+    "generatorInstruction": "Generate a thin, 1-page document. Leave obvious gaps — no success metrics, no edge cases, no non-functional requirements. The tone suggests it was written in a hurry."
+  },
+  {
+    "id": "ds-contradictory",
+    "name": "Contradictory",
+    "label": "Brief conflicts with meeting notes",
+    "generatorInstruction": "Generate a document that contains at least two internal contradictions — for example, a stated goal that conflicts with a listed constraint, or an acceptance criterion that cannot be satisfied given the described technical limitation. Do not flag the contradictions explicitly."
+  },
+  {
+    "id": "ds-wellformed",
+    "name": "Well-formed",
+    "label": "Solid PRD with minor gaps",
+    "generatorInstruction": "Generate a thorough, well-structured document with clear goals, acceptance criteria, and non-functional requirements. Leave one or two minor ambiguities a sharp Developer or QA would catch — but nothing egregious."
+  }
+]

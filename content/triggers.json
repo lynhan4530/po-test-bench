@@ -1,0 +1,72 @@
+[
+  {
+    "id": "tr-001",
+    "format": "email",
+    "compatibleIndustries": ["all"],
+    "content": "Hi — we need to get the dashboard sharing feature into the next sprint. Sales promised it to Acme Corp. Can you get the stories written up today? Cheers, Marcus",
+    "task": "Write the user stories and acceptance criteria for the dashboard sharing feature described in the email above."
+  },
+  {
+    "id": "tr-002",
+    "format": "slack",
+    "compatibleIndustries": ["all"],
+    "content": "👋 Hey, quick one — can you sort out the notification settings feature before standup? Dev team is blocked waiting for the stories. No pressure but… kinda pressure. — Priya",
+    "task": "Write the user stories and acceptance criteria for the notification settings feature."
+  },
+  {
+    "id": "tr-003",
+    "format": "email",
+    "compatibleIndustries": ["all"],
+    "content": "Team,\n\nFollowing yesterday's client call, we've committed to delivering the bulk export feature by end of Q2. I'll need a full set of user stories and AC ready for sprint planning on Thursday.\n\nThanks,\nDirector of Product",
+    "task": "Write the user stories and acceptance criteria for the bulk export feature."
+  },
+  {
+    "id": "tr-004",
+    "format": "ticket",
+    "compatibleIndustries": ["all"],
+    "content": "JIRA-4821 | Priority: High | Reporter: Sarah (QA Lead)\n\nWe need user stories for the password reset flow redesign. Current flow has a 34% drop-off rate. Design has signed off new wireframes. Stories needed before next sprint.",
+    "task": "Write the user stories and acceptance criteria for the password reset flow redesign."
+  },
+  {
+    "id": "tr-005",
+    "format": "brief",
+    "compatibleIndustries": ["all"],
+    "content": "FEATURE BRIEF — In-app Onboarding Wizard\n\nObjective: Reduce time-to-value for new users from 14 days to 3 days.\nBackground: NPS data shows new users don't discover core features within the first week.\nScope: A guided step-by-step wizard shown on first login. Skip option available. Progress saved.",
+    "task": "Write the user stories and acceptance criteria for the in-app onboarding wizard described in the brief."
+  },
+  {
+    "id": "tr-006",
+    "format": "slack",
+    "compatibleIndustries": ["all"],
+    "content": "hey — just got out of a call with the enterprise team. they want role-based permissions done this quarter. can you own the stories? i know it's a big one but you're the best person for it 🙏 — Tom",
+    "task": "Write the user stories and acceptance criteria for the role-based permissions feature."
+  },
+  {
+    "id": "tr-007",
+    "format": "email",
+    "compatibleIndustries": ["all"],
+    "content": "Hi,\n\nWe've had three support tickets this week about the search feature returning irrelevant results. The team has agreed to rebuild it. Engineering says they need acceptance criteria before they can scope it.\n\nCan you own this? Aiming to get it into the sprint after next.\n\nBest,\nHead of Engineering",
+    "task": "Write the user stories and acceptance criteria for the search feature rebuild."
+  },
+  {
+    "id": "tr-008",
+    "format": "brief",
+    "compatibleIndustries": ["all"],
+    "content": "FEATURE BRIEF — Multi-currency Support\n\nObjective: Allow users to view and transact in their local currency.\nBackground: 40% of new signups are from outside the UK. Churn interviews cite currency confusion as a top-3 reason for leaving.\nScope: Display prices in user's selected currency. Support GBP, EUR, USD, AUD for MVP.",
+    "task": "Write the user stories and acceptance criteria for multi-currency support as described in the brief."
+  },
+  {
+    "id": "tr-009",
+    "format": "ticket",
+    "compatibleIndustries": ["all"],
+    "content": "JIRA-5103 | Priority: Medium | Reporter: Alex (Product)\n\nWe need to add an audit log feature for enterprise clients. They need to see who did what and when. Compliance requirement for several pending contracts. Stories needed ASAP.",
+    "task": "Write the user stories and acceptance criteria for the audit log feature."
+  },
+  {
+    "id": "tr-010",
+    "format": "email",
+    "compatibleIndustries": ["all"],
+    "content": "Team,\n\nCustomer success flagged that users can't easily find their past reports. We've agreed to add a 'Report History' section to the dashboard. Simple feature but let's make sure we get the stories right — last time we shipped something 'simple' without proper AC it came back twice.\n\nStories needed by Wednesday.\n\nCheers,\nJamie",
+    "task": "Write the user stories and acceptance criteria for the Report History feature."
+  }
+]

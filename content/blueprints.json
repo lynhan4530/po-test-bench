@@ -1,0 +1,47 @@
+[
+  {
+    "id": "bp-001",
+    "industry": "HR Tech",
+    "companyType": "B2B SaaS startup",
+    "companySize": "40 people",
+    "product": "Leave management tool",
+    "stage": "Growth — pushing into enterprise",
+    "context": "Enterprise clients are requesting integrations with payroll systems. The engineering team is stretched across two parallel workstreams."
+  },
+  {
+    "id": "bp-002",
+    "industry": "FinTech",
+    "companyType": "Scale-up",
+    "companySize": "120 people",
+    "product": "Expense reporting and approval platform",
+    "stage": "Series B — expanding to SME market",
+    "context": "The product was built for corporates but sales is pushing into the SME segment. The codebase is monolithic and the team is mid-migration to microservices."
+  },
+  {
+    "id": "bp-003",
+    "industry": "EdTech",
+    "companyType": "B2C startup",
+    "companySize": "25 people",
+    "product": "Online coding bootcamp platform",
+    "stage": "Early growth — post product-market fit",
+    "context": "Retention is the core metric. Students are dropping off after week 3. The team suspects the lack of peer interaction is the root cause."
+  },
+  {
+    "id": "bp-004",
+    "industry": "Logistics",
+    "companyType": "B2B enterprise software",
+    "companySize": "300 people",
+    "product": "Fleet and route optimisation tool",
+    "stage": "Mature — modernising a legacy product",
+    "context": "The core product is 8 years old. A new React frontend is being built in parallel with the legacy system. The team is managing feature parity while shipping new capabilities."
+  },
+  {
+    "id": "bp-005",
+    "industry": "HealthTech",
+    "companyType": "B2B SaaS",
+    "companySize": "60 people",
+    "product": "Clinic appointment and patient management system",
+    "stage": "Growth — moving into multi-location practices",
+    "context": "New clients are multi-site clinics requiring role-based access and cross-location reporting. Compliance with health data regulations is non-negotiable."
+  }
+]
