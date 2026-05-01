@@ -1,8 +1,8 @@
-import Anthropic from '@anthropic-ai/sdk'
+import { GoogleGenerativeAI } from '@google/generative-ai'
 import type { SessionState } from '../types/session.js'
 
-const client = new Anthropic()
-const MODEL = 'claude-sonnet-4-20250514'
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? '')
+const MODEL = 'gemini-2.5-flash-lite'
 
 export async function generateDocument(
   session: SessionState,
@@ -24,17 +24,12 @@ Generator instruction: ${documentState.generatorInstruction}
 
 ## Document type requested: ${docType}`
 
-  const response = await client.messages.create({
+  const model = genAI.getGenerativeModel({
     model: MODEL,
-    max_tokens: 1024,
-    system: [
-      { type: 'text', text: docGenPrompt, cache_control: { type: 'ephemeral' } },
-    ],
-    messages: [
-      { role: 'user', content: context },
-    ],
+    systemInstruction: docGenPrompt,
+    generationConfig: { maxOutputTokens: 1024 },
   })
 
-  const text = response.content[0].type === 'text' ? response.content[0].text : ''
-  return text
+  const result = await model.generateContent(context)
+  return result.response.text()
 }

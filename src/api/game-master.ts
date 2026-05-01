@@ -1,8 +1,8 @@
-import Anthropic from '@anthropic-ai/sdk'
+import { GoogleGenerativeAI } from '@google/generative-ai'
 import type { SessionState, GameMasterOutput } from '../types/session.js'
 
-const client = new Anthropic()
-const MODEL = 'claude-sonnet-4-20250514'
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? '')
+const MODEL = 'gemini-2.5-flash-lite'
 
 export async function runGameMaster(
   session: SessionState,
@@ -10,28 +10,21 @@ export async function runGameMaster(
 ): Promise<GameMasterOutput> {
   const lastEight = session.conversationHistory.slice(-8)
 
-  const response = await client.messages.create({
+  const model = genAI.getGenerativeModel({
     model: MODEL,
-    max_tokens: 256,
-    system: [
-      { type: 'text', text: gmPrompt, cache_control: { type: 'ephemeral' } },
-      {
-        type: 'text',
-        text: `\nSignoff state: developer=${session.personaSignoffs.developer}, qa=${session.personaSignoffs.qa}\nDifficulty: ${session.difficulty}`,
-      },
-    ],
-    messages: [
-      {
-        role: 'user',
-        content:
-          `Last ${lastEight.length} messages:\n\n` +
-          lastEight.map(m => `[${m.role.toUpperCase()}]: ${m.content}`).join('\n\n') +
-          '\n\nReturn only valid JSON.',
-      },
-    ],
+    systemInstruction:
+      gmPrompt +
+      `\n\nSignoff state: developer=${session.personaSignoffs.developer}, qa=${session.personaSignoffs.qa}\nDifficulty: ${session.difficulty}`,
+    generationConfig: { responseMimeType: 'application/json', maxOutputTokens: 256 },
   })
 
-  const text = response.content[0].type === 'text' ? response.content[0].text : ''
+  const prompt =
+    `Last ${lastEight.length} messages:\n\n` +
+    lastEight.map(m => `[${m.role.toUpperCase()}]: ${m.content}`).join('\n\n') +
+    '\n\nReturn only valid JSON.'
+
+  const result = await model.generateContent(prompt)
+  const text = result.response.text()
   const match = text.match(/\{[\s\S]*\}/)
   if (!match) throw new Error(`Game Master returned invalid JSON: ${text}`)
 

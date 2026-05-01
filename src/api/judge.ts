@@ -1,8 +1,8 @@
-import Anthropic from '@anthropic-ai/sdk'
+import { GoogleGenerativeAI } from '@google/generative-ai'
 import type { SessionState, JudgeFeedbackOutput } from '../types/session.js'
 
-const client = new Anthropic()
-const MODEL = 'claude-sonnet-4-20250514'
+const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? '')
+const MODEL = 'gemini-2.5-flash-lite'
 
 export async function runJudge(
   session: SessionState,
@@ -23,18 +23,14 @@ export async function runJudge(
     .filter(Boolean)
     .join('\n\n')
 
-  const response = await client.messages.create({
+  const model = genAI.getGenerativeModel({
     model: MODEL,
-    max_tokens: 2048,
-    system: [
-      { type: 'text', text: judgePrompt, cache_control: { type: 'ephemeral' } },
-    ],
-    messages: [
-      { role: 'user', content: context },
-    ],
+    systemInstruction: judgePrompt,
+    generationConfig: { responseMimeType: 'application/json', maxOutputTokens: 2048 },
   })
 
-  const text = response.content[0].type === 'text' ? response.content[0].text : ''
+  const result = await model.generateContent(context)
+  const text = result.response.text()
   const match = text.match(/\{[\s\S]*\}/)
   if (!match) throw new Error(`Judge returned invalid JSON: ${text}`)
 
