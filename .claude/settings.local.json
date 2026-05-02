@@ -17,7 +17,8 @@
       "PowerShell(cd E:\\\\Project\\\\po-test-bench; $key = \\(Get-Content .env | Where-Object { $_ -match '^GEMINI_API_KEY=' } | ForEach-Object { $_ -replace '^GEMINI_API_KEY=', '' }\\); $body = '{\"contents\":[{\"role\":\"user\",\"parts\":[{\"text\":\"Say hi\"}]}]}'; foreach \\($m in @\\(\"gemini-2.0-flash-lite\",\"gemini-2.5-flash-lite\",\"gemini-2.5-flash\"\\)\\) { try { $r = Invoke-RestMethod -Uri \"https://generativelanguage.googleapis.com/v1beta/models/$\\($m\\):generateContent?key=$key\" -Method POST -ContentType \"application/json\" -Body $body; Write-Host \"OK: $m -> $\\($r.candidates[0].content.parts[0].text\\)\" } catch { Write-Host \"FAIL: $m -> $\\($_.Exception.Message.Substring\\(0, [Math]::Min\\(100,$_.Exception.Message.Length\\)\\)\\)\" } })",
       "PowerShell(Get-Content *)",
       "PowerShell(Invoke-WebRequest -Uri \"http://localhost:3001/api/health\" -UseBasicParsing | Select-Object -ExpandProperty Content)",
-      "PowerShell(npm test *)"
+      "PowerShell(npm test *)",
+      "PowerShell(Invoke-WebRequest -Uri \"http://localhost:3001/api/health\" -UseBasicParsing -TimeoutSec 3 2>&1 | Select-Object -ExpandProperty Content)"
     ]
   }
 }

@@ -1,9 +1,39 @@
 import type { ReactNode } from 'react';
+import MermaidDiagram from './MermaidDiagram';
 
 interface DocumentModalProps {
   docType: string;
   content: string;
   onClose: () => void;
+}
+
+// Split content into markdown segments and mermaid blocks
+function parseSegments(text: string): Array<{ type: 'markdown' | 'mermaid'; content: string }> {
+  const segments: Array<{ type: 'markdown' | 'mermaid'; content: string }> = [];
+  const mermaidRegex = /```mermaid\n([\s\S]*?)```/g;
+  let lastIndex = 0;
+  let match: RegExpExecArray | null;
+
+  while ((match = mermaidRegex.exec(text)) !== null) {
+    if (match.index > lastIndex) {
+      segments.push({ type: 'markdown', content: text.slice(lastIndex, match.index) });
+    }
+    segments.push({ type: 'mermaid', content: match[1] });
+    lastIndex = match.index + match[0].length;
+  }
+  if (lastIndex < text.length) {
+    segments.push({ type: 'markdown', content: text.slice(lastIndex) });
+  }
+  return segments;
+}
+
+function renderInline(line: string): ReactNode {
+  const parts = line.split(/(\*\*[^*]+\*\*)/g);
+  return parts.map((part, i) =>
+    part.startsWith('**') && part.endsWith('**')
+      ? <strong key={i} className="text-gray-100 font-semibold">{part.slice(2, -2)}</strong>
+      : part
+  );
 }
 
 function renderMarkdown(text: string): ReactNode[] {
@@ -16,21 +46,10 @@ function renderMarkdown(text: string): ReactNode[] {
     if (listItems.length === 0) return;
     nodes.push(
       <ul key={key++} className="list-disc list-inside space-y-0.5 text-gray-300 mb-3">
-        {listItems.map((item, i) => (
-          <li key={i}>{renderInline(item)}</li>
-        ))}
+        {listItems.map((item, i) => <li key={i}>{renderInline(item)}</li>)}
       </ul>
     );
     listItems = [];
-  }
-
-  function renderInline(line: string): React.ReactNode {
-    const parts = line.split(/(\*\*[^*]+\*\*)/g);
-    return parts.map((part, i) =>
-      part.startsWith('**') && part.endsWith('**')
-        ? <strong key={i} className="text-gray-100 font-semibold">{part.slice(2, -2)}</strong>
-        : part
-    );
   }
 
   for (const line of lines) {
@@ -101,7 +120,13 @@ export default function DocumentModal({ docType, content, onClose }: DocumentMod
               {content}
             </pre>
           ) : (
-            <div>{renderMarkdown(content)}</div>
+            <div>
+              {parseSegments(content).map((seg, i) =>
+                seg.type === 'mermaid'
+                  ? <MermaidDiagram key={i} code={seg.content} />
+                  : <div key={i}>{renderMarkdown(seg.content)}</div>
+              )}
+            </div>
           )}
         </div>
       </div>
