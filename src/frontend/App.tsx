@@ -441,6 +441,11 @@ export default function App() {
                   isSending={isSending}
                   disabled={chatDisabled}
                   onSend={sendMessage}
+                  storyRefs={(() => {
+                    const sub = generatedDocs['submission'];
+                    if (!sub) return [];
+                    return [...sub.matchAll(/^## (US-\d+)/gm)].map(m => m[1]);
+                  })()}
                 />
               )}
             </main>

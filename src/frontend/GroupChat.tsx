@@ -8,6 +8,7 @@ interface GroupChatProps {
   isSending: boolean;
   disabled: boolean;
   onSend: (content: string) => void;
+  storyRefs?: string[];
 }
 
 const ROLE_LABEL: Record<string, string> = {
@@ -28,7 +29,7 @@ const NAME_CLASS: Record<string, string> = {
   qa: 'text-purple-400',
 };
 
-export default function GroupChat({ messages, typing, isSending, disabled, onSend }: GroupChatProps) {
+export default function GroupChat({ messages, typing, isSending, disabled, onSend, storyRefs }: GroupChatProps) {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -41,6 +42,12 @@ export default function GroupChat({ messages, typing, isSending, disabled, onSen
     if (!val || isSending || disabled) return;
     onSend(val);
     if (inputRef.current) inputRef.current.value = '';
+  }
+
+  function insertRef(ref: string) {
+    if (!inputRef.current) return;
+    inputRef.current.value = inputRef.current.value + ` [${ref}] `;
+    inputRef.current.focus();
   }
 
   function handleKeyDown(e: React.KeyboardEvent<HTMLTextAreaElement>) {
@@ -85,7 +92,23 @@ export default function GroupChat({ messages, typing, isSending, disabled, onSen
       </div>
 
       {/* Input bar */}
-      <div className="px-4 py-3 border-t border-gray-800 flex gap-2 items-end">
+      <div className="px-4 pt-3 pb-3 border-t border-gray-800 space-y-2">
+        {storyRefs && storyRefs.length > 0 && (
+          <div className="flex items-center gap-2 flex-wrap">
+            <span className="text-xs text-gray-600">Reference:</span>
+            {storyRefs.map(ref => (
+              <button
+                key={ref}
+                type="button"
+                onClick={() => insertRef(ref)}
+                className="text-xs px-2 py-0.5 bg-gray-800 hover:bg-gray-700 rounded text-blue-400 font-mono transition-colors"
+              >
+                {ref}
+              </button>
+            ))}
+          </div>
+        )}
+        <div className="flex gap-2 items-end">
         <textarea
           ref={inputRef}
           rows={2}
@@ -101,6 +124,7 @@ export default function GroupChat({ messages, typing, isSending, disabled, onSen
         >
           {isSending ? '…' : 'Send'}
         </button>
+        </div>
       </div>
     </div>
   );

@@ -18,7 +18,8 @@
       "PowerShell(Get-Content *)",
       "PowerShell(Invoke-WebRequest -Uri \"http://localhost:3001/api/health\" -UseBasicParsing | Select-Object -ExpandProperty Content)",
       "PowerShell(npm test *)",
-      "PowerShell(Invoke-WebRequest -Uri \"http://localhost:3001/api/health\" -UseBasicParsing -TimeoutSec 3 2>&1 | Select-Object -ExpandProperty Content)"
+      "PowerShell(Invoke-WebRequest -Uri \"http://localhost:3001/api/health\" -UseBasicParsing -TimeoutSec 3 2>&1 | Select-Object -ExpandProperty Content)",
+      "WebFetch(domain:api.github.com)"
     ]
   }
 }

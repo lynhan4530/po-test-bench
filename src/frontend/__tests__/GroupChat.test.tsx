@@ -94,4 +94,16 @@ describe('GroupChat', () => {
     render(<GroupChat {...defaultProps} typing={{ persona: 'developer' }} />)
     expect(screen.getByText(/developer is typing/i)).toBeInTheDocument()
   })
+
+  it('renders story reference chips when storyRefs prop is set', () => {
+    render(<GroupChat {...defaultProps} storyRefs={['US-001', 'US-002']} />)
+    expect(screen.getByRole('button', { name: 'US-001' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'US-002' })).toBeInTheDocument()
+  })
+
+  it('clicking a story chip appends the reference to the textarea', () => {
+    render(<GroupChat {...defaultProps} storyRefs={['US-001']} />)
+    fireEvent.click(screen.getByRole('button', { name: 'US-001' }))
+    expect((screen.getByRole('textbox') as HTMLTextAreaElement).value).toBe(' [US-001] ')
+  })
 })

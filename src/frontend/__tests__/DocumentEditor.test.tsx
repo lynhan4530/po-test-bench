@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react'
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import DocumentEditor from '../DocumentEditor'
 import type { Trigger } from '../../types/session'
 
@@ -17,41 +17,84 @@ const defaultProps = {
   onSubmit: vi.fn(),
 }
 
+function fillCard(role: string, goal: string, benefit: string, ac: string) {
+  fireEvent.change(screen.getByRole('textbox', { name: /^role$/i }), { target: { value: role } })
+  fireEvent.change(screen.getByRole('textbox', { name: /^goal$/i }), { target: { value: goal } })
+  fireEvent.change(screen.getByRole('textbox', { name: /^benefit$/i }), { target: { value: benefit } })
+  fireEvent.change(screen.getByRole('textbox', { name: /acceptance criterion 1/i }), { target: { value: ac } })
+}
+
 describe('DocumentEditor', () => {
+  beforeEach(() => {
+    vi.clearAllMocks()
+  })
+
   it('renders the task text from trigger', () => {
     render(<DocumentEditor {...defaultProps} />)
     expect(screen.getByText(/bulk export feature/i)).toBeInTheDocument()
   })
 
-  it('renders a textarea with a placeholder', () => {
+  it('renders "1 story" label by default', () => {
     render(<DocumentEditor {...defaultProps} />)
-    const textarea = screen.getByRole('textbox')
-    expect(textarea).toBeInTheDocument()
-    expect(textarea).toHaveAttribute('placeholder')
+    expect(screen.getByText(/1 story/i)).toBeInTheDocument()
   })
 
-  it('disables the Submit button when textarea is empty', () => {
+  it('Add Story button adds a second card', () => {
+    render(<DocumentEditor {...defaultProps} />)
+    fireEvent.click(screen.getByRole('button', { name: /add story/i }))
+    expect(screen.getByText(/2 stories/i)).toBeInTheDocument()
+  })
+
+  it('Remove button is hidden when only 1 card', () => {
+    render(<DocumentEditor {...defaultProps} />)
+    expect(screen.queryByRole('button', { name: /remove story/i })).not.toBeInTheDocument()
+  })
+
+  it('Remove button deletes a card when more than 1 exist', () => {
+    render(<DocumentEditor {...defaultProps} />)
+    fireEvent.click(screen.getByRole('button', { name: /add story/i }))
+    expect(screen.getByText(/2 stories/i)).toBeInTheDocument()
+    fireEvent.click(screen.getAllByRole('button', { name: /remove story/i })[0])
+    expect(screen.getByText(/1 story/i)).toBeInTheDocument()
+  })
+
+  it('Submit is disabled when fields are empty', () => {
     render(<DocumentEditor {...defaultProps} />)
     expect(screen.getByRole('button', { name: /submit for review/i })).toBeDisabled()
   })
 
-  it('enables the Submit button when textarea has content', () => {
+  it('Submit is enabled after filling role, goal, benefit and one AC item', () => {
     render(<DocumentEditor {...defaultProps} />)
-    fireEvent.change(screen.getByRole('textbox'), { target: { value: 'As a user, I want...' } })
+    fillCard(
+      'logistics manager',
+      'bulk export orders',
+      'process them in our ERP',
+      'Given I select orders, when I click Export, then a CSV downloads.',
+    )
     expect(screen.getByRole('button', { name: /submit for review/i })).not.toBeDisabled()
   })
 
-  it('calls onSubmit with trimmed value when Submit is clicked', () => {
+  it('calls onSubmit with serialized markdown containing US-001 and priority', () => {
     const onSubmit = vi.fn()
     render(<DocumentEditor {...defaultProps} onSubmit={onSubmit} />)
-    fireEvent.change(screen.getByRole('textbox'), { target: { value: '  My user stories  ' } })
+    fillCard(
+      'logistics manager',
+      'bulk export orders',
+      'process them in our ERP',
+      'Given I select orders, when I click Export, then a CSV downloads.',
+    )
     fireEvent.click(screen.getByRole('button', { name: /submit for review/i }))
-    expect(onSubmit).toHaveBeenCalledWith('My user stories')
+    expect(onSubmit).toHaveBeenCalledTimes(1)
+    const arg = onSubmit.mock.calls[0][0] as string
+    expect(arg).toContain('## US-001 [Must Have]')
+    expect(arg).toContain('As a logistics manager, I want bulk export orders so that process them in our ERP.')
+    expect(arg).toContain('Acceptance Criteria:')
+    expect(arg).toContain('- Given I select orders')
   })
 
-  it('disables textarea and button and shows Submitting… when isSubmitting is true', () => {
+  it('disables all inputs and shows Submitting… when isSubmitting is true', () => {
     render(<DocumentEditor {...defaultProps} isSubmitting />)
-    expect(screen.getByRole('textbox')).toBeDisabled()
     expect(screen.getByRole('button', { name: /submitting/i })).toBeDisabled()
+    expect(screen.getByRole('button', { name: /add story/i })).toBeDisabled()
   })
 })
