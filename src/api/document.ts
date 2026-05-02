@@ -27,7 +27,7 @@ Generator instruction: ${documentState.generatorInstruction}
   const model = genAI.getGenerativeModel({
     model: MODEL,
     systemInstruction: docGenPrompt,
-    generationConfig: { maxOutputTokens: 1024 },
+    generationConfig: { maxOutputTokens: 2048 },
   })
 
   const result = await model.generateContent(context)
