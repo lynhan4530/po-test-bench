@@ -8,7 +8,7 @@ import { dirname, join } from 'path'
 import { createSession, sessions } from '../src/api/session.js'
 import { runGameMaster } from '../src/api/game-master.js'
 import { runPersona } from '../src/api/persona.js'
-import { generateDocument } from '../src/api/document.js'
+import { generateDocument, generateRequirements } from '../src/api/document.js'
 import { runJudge } from '../src/api/judge.js'
 import type { Message } from '../src/types/session.js'
 
@@ -29,6 +29,7 @@ const prompts = {
   qa: readFileSync(join(promptsDir, 'qa-persona.md'), 'utf-8'),
   judge: readFileSync(join(promptsDir, 'judge.md'), 'utf-8'),
   documentGenerator: readFileSync(join(promptsDir, 'document-generator.md'), 'utf-8'),
+  requirementsGenerator: readFileSync(join(promptsDir, 'requirements-generator.md'), 'utf-8'),
 }
 
 console.log('Prompts loaded:', Object.keys(prompts).join(', '))
@@ -172,7 +173,7 @@ app.post('/api/session/:id/document', async (req, res) => {
 })
 
 // POST /api/session/:id/submit
-app.post('/api/session/:id/submit', (req, res) => {
+app.post('/api/session/:id/submit', async (req, res) => {
   const session = sessions.get(req.params.id)
   if (!session) return res.status(404).json({ error: 'Session not found' })
 
@@ -184,6 +185,15 @@ app.post('/api/session/:id/submit', (req, res) => {
   }
 
   session.generatedDocuments['submission'] = content.trim()
+
+  // Generate hidden complete requirements reference for personas + judge
+  try {
+    const requirements = await generateRequirements(session, prompts.requirementsGenerator)
+    session.generatedDocuments['_requirements'] = requirements
+  } catch (err) {
+    console.error('Requirements generation failed:', err)
+  }
+
   res.json({ ok: true })
 })
 

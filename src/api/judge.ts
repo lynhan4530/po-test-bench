@@ -8,8 +8,20 @@ export async function runJudge(
   session: SessionState,
   judgePrompt: string,
 ): Promise<JudgeFeedbackOutput> {
-  const docsContext = Object.entries(session.generatedDocuments)
-    .map(([type, content]) => `## ${type}\n${content}`)
+  const visibleDocs = Object.entries(session.generatedDocuments)
+    .filter(([type]) => !type.startsWith('_'))
+    .map(([type, content]) => `### ${type}\n${content}`)
+    .join('\n\n')
+
+  const requirementsRef = session.generatedDocuments['_requirements']
+
+  const docsContext = [
+    visibleDocs ? `## Project Documents\n${visibleDocs}` : '',
+    requirementsRef
+      ? `## Complete Requirements Reference (internal)\nUse this as the gold standard when scoring the user's submission. Penalise gaps against this list.\n\n${requirementsRef}`
+      : '',
+  ]
+    .filter(Boolean)
     .join('\n\n')
 
   const conversationText = session.conversationHistory

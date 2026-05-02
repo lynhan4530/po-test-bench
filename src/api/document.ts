@@ -4,6 +4,32 @@ import type { SessionState } from '../types/session.js'
 const genAI = new GoogleGenerativeAI(process.env.GEMINI_API_KEY ?? '')
 const MODEL = 'gemini-2.5-flash-lite'
 
+export async function generateRequirements(
+  session: SessionState,
+  requirementsPrompt: string,
+): Promise<string> {
+  const { blueprint, trigger } = session
+
+  const context = `## Blueprint
+Industry: ${blueprint.industry}
+Company: ${blueprint.companyType}, ${blueprint.companySize}
+Product: ${blueprint.product}
+Stage: ${blueprint.stage}
+Context: ${blueprint.context}
+
+## Feature being specified
+${trigger.task}`
+
+  const model = genAI.getGenerativeModel({
+    model: MODEL,
+    systemInstruction: requirementsPrompt,
+    generationConfig: { maxOutputTokens: 1024 },
+  })
+
+  const result = await model.generateContent(context)
+  return result.response.text()
+}
+
 export async function generateDocument(
   session: SessionState,
   docType: string,

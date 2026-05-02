@@ -49,12 +49,18 @@ export async function runPersona(
   personaPrompt: string,
   res: Response,
 ): Promise<{ message: string; signedOff: boolean }> {
-  const docsContext = Object.entries(session.generatedDocuments)
-    .map(([type, content]) => `## ${type}\n${content}`)
+  const visibleDocs = Object.entries(session.generatedDocuments)
+    .filter(([type]) => !type.startsWith('_'))
+    .map(([type, content]) => `### ${type}\n${content}`)
     .join('\n\n')
 
+  const requirementsRef = session.generatedDocuments['_requirements']
+
   const dynamicContext = [
-    docsContext ? `## Project Documents\n${docsContext}` : '',
+    visibleDocs ? `## Project Documents\n${visibleDocs}` : '',
+    requirementsRef
+      ? `## Complete Requirements Reference (internal — not shown to user)\nUse this to evaluate whether the user's submission covers all necessary requirements. Flag gaps specifically.\n\n${requirementsRef}`
+      : '',
     `## Game Master instruction\nFocus: ${gmOutput.focus}\nTone: ${gmOutput.tone}`,
   ]
     .filter(Boolean)
