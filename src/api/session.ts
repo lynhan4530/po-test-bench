@@ -13,13 +13,13 @@ function pickRandom<T>(arr: T[]): T {
 
 export const sessions = new Map<string, SessionState>()
 
-export function createSession(): SessionState {
+export function createSession(difficulty: 1 | 2 | 3 | 4 = 1): SessionState {
   return {
     sessionId: crypto.randomUUID(),
     blueprint: pickRandom(blueprints),
     documentState: pickRandom(documentStates),
     trigger: pickRandom(triggers),
-    difficulty: 1,
+    difficulty,
     conversationHistory: [],
     generatedDocuments: {},
     personaSignoffs: { developer: false, qa: false },

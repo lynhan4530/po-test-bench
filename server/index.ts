@@ -37,8 +37,12 @@ console.log('Prompts loaded:', Object.keys(prompts).join(', '))
 // ── Routes ──────────────────────────────────────────────────────────────────
 
 // POST /api/session/start
-app.post('/api/session/start', (_req, res) => {
-  const session = createSession()
+app.post('/api/session/start', (req, res) => {
+  const raw = (req.body as { difficulty?: number }).difficulty
+  const difficulty = ([1, 2, 3, 4] as const).includes(raw as 1 | 2 | 3 | 4)
+    ? (raw as 1 | 2 | 3 | 4)
+    : 1
+  const session = createSession(difficulty)
   sessions.set(session.sessionId, session)
   res.json({
     sessionId: session.sessionId,
@@ -46,6 +50,7 @@ app.post('/api/session/start', (_req, res) => {
     blueprint: session.blueprint,
     documentState: session.documentState,
     phase: session.phase,
+    difficulty: session.difficulty,
   })
 })
 

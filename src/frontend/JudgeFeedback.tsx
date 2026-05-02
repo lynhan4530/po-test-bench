@@ -3,6 +3,7 @@ import type { JudgeFeedbackOutput } from '../types/session';
 interface JudgeFeedbackProps {
   feedback: JudgeFeedbackOutput;
   onNewChallenge: () => void;
+  onBackToMenu: () => void;
 }
 
 function ScoreBar({ score }: { score: number }) {
@@ -21,7 +22,7 @@ function ScoreBar({ score }: { score: number }) {
   );
 }
 
-export default function JudgeFeedback({ feedback, onNewChallenge }: JudgeFeedbackProps) {
+export default function JudgeFeedback({ feedback, onNewChallenge, onBackToMenu }: JudgeFeedbackProps) {
   return (
     <div className="flex flex-col flex-1 overflow-y-auto px-6 py-6 space-y-6">
       <div className="flex items-start justify-between gap-4">
@@ -31,12 +32,20 @@ export default function JudgeFeedback({ feedback, onNewChallenge }: JudgeFeedbac
             Overall score: <span className="text-white font-semibold">{feedback.overallScore}/5</span>
           </p>
         </div>
-        <button
-          onClick={onNewChallenge}
-          className="shrink-0 px-4 py-2 bg-blue-700 hover:bg-blue-600 rounded text-sm font-medium text-white transition-colors"
-        >
-          New Challenge
-        </button>
+        <div className="flex gap-2 shrink-0">
+          <button
+            onClick={onBackToMenu}
+            className="px-3 py-2 bg-gray-700 hover:bg-gray-600 rounded text-sm font-medium text-gray-200 transition-colors"
+          >
+            Menu
+          </button>
+          <button
+            onClick={onNewChallenge}
+            className="px-4 py-2 bg-blue-700 hover:bg-blue-600 rounded text-sm font-medium text-white transition-colors"
+          >
+            New Challenge
+          </button>
+        </div>
       </div>
 
       <p className="text-sm text-gray-200 leading-relaxed">{feedback.summary}</p>

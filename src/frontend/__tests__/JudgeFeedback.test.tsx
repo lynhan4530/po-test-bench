@@ -17,17 +17,17 @@ const mockFeedback: JudgeFeedbackOutput = {
 
 describe('JudgeFeedback', () => {
   it('renders the overall score', () => {
-    render(<JudgeFeedback feedback={mockFeedback} onNewChallenge={vi.fn()} />)
+    render(<JudgeFeedback feedback={mockFeedback} onNewChallenge={vi.fn()} onBackToMenu={vi.fn()} />)
     expect(screen.getByText(/3\.4\/5/)).toBeInTheDocument()
   })
 
   it('renders the summary text', () => {
-    render(<JudgeFeedback feedback={mockFeedback} onNewChallenge={vi.fn()} />)
+    render(<JudgeFeedback feedback={mockFeedback} onNewChallenge={vi.fn()} onBackToMenu={vi.fn()} />)
     expect(screen.getByText('Good effort overall. Work on risk awareness.')).toBeInTheDocument()
   })
 
   it('renders all five score dimension cards', () => {
-    render(<JudgeFeedback feedback={mockFeedback} onNewChallenge={vi.fn()} />)
+    render(<JudgeFeedback feedback={mockFeedback} onNewChallenge={vi.fn()} onBackToMenu={vi.fn()} />)
     expect(screen.getByText('Defensibility')).toBeInTheDocument()
     expect(screen.getByText('Adaptability')).toBeInTheDocument()
     expect(screen.getByText('Clarity Under Pressure')).toBeInTheDocument()
@@ -36,25 +36,25 @@ describe('JudgeFeedback', () => {
   })
 
   it('renders per-dimension feedback text', () => {
-    render(<JudgeFeedback feedback={mockFeedback} onNewChallenge={vi.fn()} />)
+    render(<JudgeFeedback feedback={mockFeedback} onNewChallenge={vi.fn()} onBackToMenu={vi.fn()} />)
     expect(screen.getByText('Did not flag key trade-offs.')).toBeInTheDocument()
   })
 
   it('calls onNewChallenge when New Challenge button is clicked', () => {
     const onNewChallenge = vi.fn()
-    render(<JudgeFeedback feedback={mockFeedback} onNewChallenge={onNewChallenge} />)
+    render(<JudgeFeedback feedback={mockFeedback} onNewChallenge={onNewChallenge} onBackToMenu={vi.fn()} />)
     fireEvent.click(screen.getByRole('button', { name: /new challenge/i }))
     expect(onNewChallenge).toHaveBeenCalledTimes(1)
   })
 
   it('score bar is green for score >= 4', () => {
-    const { container } = render(<JudgeFeedback feedback={mockFeedback} onNewChallenge={vi.fn()} />)
+    const { container } = render(<JudgeFeedback feedback={mockFeedback} onNewChallenge={vi.fn()} onBackToMenu={vi.fn()} />)
     const greenBars = container.querySelectorAll('.bg-emerald-500')
     expect(greenBars.length).toBeGreaterThan(0)
   })
 
   it('score bar is red for score < 3', () => {
-    const { container } = render(<JudgeFeedback feedback={mockFeedback} onNewChallenge={vi.fn()} />)
+    const { container } = render(<JudgeFeedback feedback={mockFeedback} onNewChallenge={vi.fn()} onBackToMenu={vi.fn()} />)
     const redBars = container.querySelectorAll('.bg-red-500')
     expect(redBars.length).toBeGreaterThan(0)
   })
