@@ -7,7 +7,7 @@ import DocumentEditor from './DocumentEditor';
 import DocumentModal from './DocumentModal';
 import JudgeFeedback from './JudgeFeedback';
 import MainMenu from './MainMenu';
-import { loadHistory, upsertEntry, clearHistory } from './history';
+import { loadHistory, upsertEntry, deleteEntry, clearHistory } from './history';
 import type { HistoryEntry } from './history';
 
 const API_URL = (import.meta.env.VITE_API_URL as string | undefined) ?? 'http://localhost:3001';
@@ -328,6 +328,7 @@ export default function App() {
           onStart={() => startSession(selectedDifficulty)}
           onResume={resumeSession}
           onViewResult={entry => setHistoryViewEntry(entry)}
+          onDeleteEntry={id => { deleteEntry(id); refreshHistory(); }}
           onClearHistory={() => { clearHistory(); refreshHistory(); }}
         />
         {historyViewEntry && historyViewEntry.scores && (

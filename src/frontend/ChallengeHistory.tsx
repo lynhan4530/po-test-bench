@@ -4,6 +4,7 @@ interface ChallengeHistoryProps {
   entries: HistoryEntry[];
   onResume: (id: string) => void;
   onViewResult: (entry: HistoryEntry) => void;
+  onDeleteEntry: (sessionId: string) => void;
   onClear: () => void;
 }
 
@@ -24,7 +25,7 @@ function formatDate(ts: number): string {
   return d.toLocaleDateString(undefined, { month: 'short', day: 'numeric' });
 }
 
-export default function ChallengeHistory({ entries, onResume, onViewResult, onClear }: ChallengeHistoryProps) {
+export default function ChallengeHistory({ entries, onResume, onViewResult, onDeleteEntry, onClear }: ChallengeHistoryProps) {
   if (!entries.length) {
     return (
       <div className="bg-gray-900 border border-gray-800 rounded-lg p-5">
@@ -80,6 +81,13 @@ export default function ChallengeHistory({ entries, onResume, onViewResult, onCl
                     Resume
                   </button>
                 ) : null}
+                <button
+                  onClick={() => onDeleteEntry(entry.sessionId)}
+                  className="text-xs px-2 py-1 text-gray-600 hover:text-red-400 transition-colors"
+                  aria-label="Delete entry"
+                >
+                  ×
+                </button>
               </div>
             </div>
           </div>

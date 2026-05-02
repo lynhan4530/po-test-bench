@@ -34,6 +34,11 @@ export function upsertEntry(patch: Partial<HistoryEntry> & { sessionId: string }
   localStorage.setItem(HISTORY_KEY, JSON.stringify(entries.slice(0, MAX_ENTRIES)));
 }
 
+export function deleteEntry(sessionId: string): void {
+  const entries = loadHistory().filter(e => e.sessionId !== sessionId);
+  localStorage.setItem(HISTORY_KEY, JSON.stringify(entries));
+}
+
 export function clearHistory(): void {
   localStorage.removeItem(HISTORY_KEY);
 }

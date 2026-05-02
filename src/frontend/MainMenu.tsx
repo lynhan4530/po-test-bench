@@ -11,6 +11,7 @@ interface MainMenuProps {
   onStart: () => void;
   onResume: (sessionId: string) => void;
   onViewResult: (entry: HistoryEntry) => void;
+  onDeleteEntry: (sessionId: string) => void;
   onClearHistory: () => void;
 }
 
@@ -22,6 +23,7 @@ export default function MainMenu({
   onStart,
   onResume,
   onViewResult,
+  onDeleteEntry,
   onClearHistory,
 }: MainMenuProps) {
   return (
@@ -57,6 +59,7 @@ export default function MainMenu({
           entries={history}
           onResume={onResume}
           onViewResult={onViewResult}
+          onDeleteEntry={onDeleteEntry}
           onClear={onClearHistory}
         />
 

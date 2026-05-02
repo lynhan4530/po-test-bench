@@ -17,10 +17,8 @@ const defaultProps = {
   onSubmit: vi.fn(),
 }
 
-function fillCard(role: string, goal: string, benefit: string, ac: string) {
-  fireEvent.change(screen.getByRole('textbox', { name: /^role$/i }), { target: { value: role } })
-  fireEvent.change(screen.getByRole('textbox', { name: /^goal$/i }), { target: { value: goal } })
-  fireEvent.change(screen.getByRole('textbox', { name: /^benefit$/i }), { target: { value: benefit } })
+function fillCard(story: string, ac: string) {
+  fireEvent.change(screen.getByRole('textbox', { name: /user story/i }), { target: { value: story } })
   fireEvent.change(screen.getByRole('textbox', { name: /acceptance criterion 1/i }), { target: { value: ac } })
 }
 
@@ -63,12 +61,10 @@ describe('DocumentEditor', () => {
     expect(screen.getByRole('button', { name: /submit for review/i })).toBeDisabled()
   })
 
-  it('Submit is enabled after filling role, goal, benefit and one AC item', () => {
+  it('Submit is enabled after filling story and one AC item', () => {
     render(<DocumentEditor {...defaultProps} />)
     fillCard(
-      'logistics manager',
-      'bulk export orders',
-      'process them in our ERP',
+      'As a logistics manager, I want to bulk export orders so that I can process them in our ERP.',
       'Given I select orders, when I click Export, then a CSV downloads.',
     )
     expect(screen.getByRole('button', { name: /submit for review/i })).not.toBeDisabled()
@@ -78,16 +74,14 @@ describe('DocumentEditor', () => {
     const onSubmit = vi.fn()
     render(<DocumentEditor {...defaultProps} onSubmit={onSubmit} />)
     fillCard(
-      'logistics manager',
-      'bulk export orders',
-      'process them in our ERP',
+      'As a logistics manager, I want to bulk export orders so that I can process them in our ERP.',
       'Given I select orders, when I click Export, then a CSV downloads.',
     )
     fireEvent.click(screen.getByRole('button', { name: /submit for review/i }))
     expect(onSubmit).toHaveBeenCalledTimes(1)
     const arg = onSubmit.mock.calls[0][0] as string
     expect(arg).toContain('## US-001 [Must Have]')
-    expect(arg).toContain('As a logistics manager, I want bulk export orders so that process them in our ERP.')
+    expect(arg).toContain('As a logistics manager')
     expect(arg).toContain('Acceptance Criteria:')
     expect(arg).toContain('- Given I select orders')
   })

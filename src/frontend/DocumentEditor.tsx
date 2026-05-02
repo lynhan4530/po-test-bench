@@ -14,9 +14,7 @@ function makeEmptyCard(seq: number): StoryCard {
     id: crypto.randomUUID(),
     seq,
     priority: 'Must Have',
-    role: '',
-    goal: '',
-    benefit: '',
+    story: '',
     ac: [{ id: crypto.randomUUID(), text: '' }],
   };
 }
@@ -26,7 +24,7 @@ function serialize(cards: StoryCard[]): string {
     .map(c => {
       const storyId = `US-${String(c.seq).padStart(3, '0')}`;
       const acLines = c.ac.map(a => `- ${a.text}`).join('\n');
-      return `## ${storyId} [${c.priority}]\nAs a ${c.role}, I want ${c.goal} so that ${c.benefit}.\n\nAcceptance Criteria:\n${acLines}`;
+      return `## ${storyId} [${c.priority}]\n${c.story}\n\nAcceptance Criteria:\n${acLines}`;
     })
     .join('\n\n');
 }
@@ -34,9 +32,7 @@ function serialize(cards: StoryCard[]): string {
 function isValid(cards: StoryCard[]): boolean {
   return cards.every(
     c =>
-      c.role.trim() &&
-      c.goal.trim() &&
-      c.benefit.trim() &&
+      c.story.trim() &&
       c.ac.length > 0 &&
       c.ac.every(a => a.text.trim()),
   );
