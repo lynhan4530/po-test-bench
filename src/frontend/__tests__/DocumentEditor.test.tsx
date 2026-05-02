@@ -18,8 +18,12 @@ const defaultProps = {
 }
 
 function fillCard(story: string, ac: string) {
+  // Story field is a plain textarea
   fireEvent.change(screen.getByRole('textbox', { name: /user story/i }), { target: { value: story } })
-  fireEvent.change(screen.getByRole('textbox', { name: /acceptance criterion 1/i }), { target: { value: ac } })
+  // AC field is a contenteditable div — set innerHTML then fire input
+  const acEl = screen.getByRole('textbox', { name: /acceptance criterion 1/i })
+  acEl.innerHTML = ac
+  fireEvent.input(acEl)
 }
 
 describe('DocumentEditor', () => {

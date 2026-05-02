@@ -9,6 +9,26 @@ interface DocumentEditorProps {
   onSubmit: (content: string) => void;
 }
 
+function htmlToText(html: string): string {
+  return html.replace(/<[^>]+>/g, '').replace(/&[^;]+;/g, ' ').trim();
+}
+
+function htmlToMarkdown(html: string): string {
+  return html
+    .replace(/<strong>([\s\S]*?)<\/strong>/gi, '**$1**')
+    .replace(/<b>([\s\S]*?)<\/b>/gi, '**$1**')
+    .replace(/<em>([\s\S]*?)<\/em>/gi, '*$1*')
+    .replace(/<i>([\s\S]*?)<\/i>/gi, '*$1*')
+    .replace(/<br\s*\/?>/gi, '\n')
+    .replace(/<div>/gi, '\n')
+    .replace(/<[^>]+>/g, '')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .trim();
+}
+
 function makeEmptyCard(seq: number): StoryCard {
   return {
     id: crypto.randomUUID(),
@@ -23,7 +43,7 @@ function serialize(cards: StoryCard[]): string {
   return cards
     .map(c => {
       const storyId = `US-${String(c.seq).padStart(3, '0')}`;
-      const acLines = c.ac.map(a => `- ${a.text}`).join('\n');
+      const acLines = c.ac.map(a => `- ${htmlToMarkdown(a.text)}`).join('\n');
       return `## ${storyId} [${c.priority}]\n${c.story}\n\nAcceptance Criteria:\n${acLines}`;
     })
     .join('\n\n');
@@ -34,7 +54,7 @@ function isValid(cards: StoryCard[]): boolean {
     c =>
       c.story.trim() &&
       c.ac.length > 0 &&
-      c.ac.every(a => a.text.trim()),
+      c.ac.every(a => htmlToText(a.text).length > 0),
   );
 }
 
