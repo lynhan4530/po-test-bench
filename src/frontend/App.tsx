@@ -3,6 +3,7 @@ import type { Trigger, Blueprint, DocumentState, JudgeFeedbackOutput } from '../
 import type { ChatMessage } from './types';
 import ContextPanel from './ContextPanel';
 import GroupChat from './GroupChat';
+import DocumentEditor from './DocumentEditor';
 import DocumentModal from './DocumentModal';
 import JudgeFeedback from './JudgeFeedback';
 
@@ -28,6 +29,7 @@ export default function App() {
 
   const [isStarting, setIsStarting] = useState(false);
   const [isSending, setIsSending] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [isLoadingDoc, setIsLoadingDoc] = useState(false);
   const [isJudging, setIsJudging] = useState(false);
 
@@ -66,6 +68,26 @@ export default function App() {
       console.error('Failed to start session:', err);
     } finally {
       setIsStarting(false);
+    }
+  }
+
+  async function submitDocument(content: string) {
+    if (!sessionId || isSubmitting) return;
+    setIsSubmitting(true);
+    try {
+      const res = await fetch(`${API_URL}/api/session/${sessionId}/submit`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ content }),
+      });
+      const data = await res.json() as { ok: boolean };
+      if (data.ok) {
+        setGeneratedDocs(prev => ({ ...prev, submission: content }));
+      }
+    } catch (err) {
+      console.error('Submit failed:', err);
+    } finally {
+      setIsSubmitting(false);
     }
   }
 
@@ -247,7 +269,13 @@ export default function App() {
             />
 
             <main className="flex flex-col flex-1 min-h-0">
-              {phase === 'complete' && judgeResult ? (
+              {!generatedDocs['submission'] ? (
+                <DocumentEditor
+                  trigger={trigger}
+                  isSubmitting={isSubmitting}
+                  onSubmit={submitDocument}
+                />
+              ) : phase === 'complete' && judgeResult ? (
                 <JudgeFeedback feedback={judgeResult} onNewChallenge={startSession} />
               ) : isJudging ? (
                 <div className="flex flex-col flex-1 items-center justify-center gap-3 text-gray-400">

@@ -45,7 +45,7 @@ export interface SessionState {
 }
 
 export interface GameMasterOutput {
-  nextSpeaker: 'developer' | 'qa' | 'end';
+  nextSpeaker: 'developer' | 'qa' | 'end' | 'wait';
   focus: string;
   tone: string;
 }

@@ -56,6 +56,14 @@ export default function ContextPanel({
         <p className="text-xs font-semibold uppercase tracking-wider text-gray-500">
           Documents · {documentState.label}
         </p>
+        {generatedDocs['submission'] && (
+          <button
+            onClick={() => onRequestDoc('submission')}
+            className="w-full text-sm text-left px-3 py-1.5 rounded bg-blue-900/30 hover:bg-blue-900/50 text-blue-300 transition-colors"
+          >
+            View My Submission
+          </button>
+        )}
         {DOC_BUTTONS.map(({ docType, label }) => (
           <button
             key={docType}

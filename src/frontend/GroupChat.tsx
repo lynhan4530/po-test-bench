@@ -56,7 +56,7 @@ export default function GroupChat({ messages, typing, isSending, disabled, onSen
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
         {messages.length === 0 && (
           <p className="text-gray-600 text-sm text-center mt-10">
-            The challenge has started. Write your first message to begin the review.
+            Your submission is under review. The team will respond shortly.
           </p>
         )}
         {messages.map(msg => (

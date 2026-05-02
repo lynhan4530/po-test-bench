@@ -85,57 +85,63 @@ app.post('/api/session/:id/message', async (req, res) => {
   res.flushHeaders()
 
   try {
-    // Step 1: Game Master decides who speaks next
-    const gmOutput = await runGameMaster(session, prompts.gameMaster)
+    const MAX_CHAIN = 4
+    let chainCount = 0
 
-    if (gmOutput.nextSpeaker === 'end') {
-      session.phase = 'judging'
-      res.write(`data: ${JSON.stringify({ type: 'phase', phase: 'judging' })}\n\n`)
-      res.end()
-      return
+    while (chainCount < MAX_CHAIN) {
+      const gmOutput = await runGameMaster(session, prompts.gameMaster)
+
+      if (gmOutput.nextSpeaker === 'end') {
+        session.phase = 'judging'
+        res.write(`data: ${JSON.stringify({ type: 'phase', phase: 'judging' })}\n\n`)
+        res.end()
+        return
+      }
+
+      if (gmOutput.nextSpeaker === 'wait') break
+
+      res.write(`data: ${JSON.stringify({ type: 'typing', persona: gmOutput.nextSpeaker })}\n\n`)
+
+      const personaPrompt =
+        gmOutput.nextSpeaker === 'developer' ? prompts.developer : prompts.qa
+
+      const { message, signedOff } = await runPersona(
+        session,
+        gmOutput.nextSpeaker,
+        gmOutput,
+        personaPrompt,
+        res,
+      )
+
+      session.conversationHistory.push({
+        role: gmOutput.nextSpeaker,
+        content: message,
+        timestamp: Date.now(),
+      } as Message)
+
+      if (signedOff) {
+        session.personaSignoffs[gmOutput.nextSpeaker] = true
+        session.phase =
+          session.personaSignoffs.developer && session.personaSignoffs.qa
+            ? 'judging'
+            : 'review'
+      }
+
+      chainCount++
+
+      res.write(
+        `data: ${JSON.stringify({
+          type: 'done',
+          persona: gmOutput.nextSpeaker,
+          signedOff,
+          phase: session.phase,
+          signoffs: session.personaSignoffs,
+        })}\n\n`,
+      )
+
+      if (session.phase === 'judging') break
     }
 
-    // Step 2: Typing indicator (shown immediately after GM resolves)
-    res.write(`data: ${JSON.stringify({ type: 'typing', persona: gmOutput.nextSpeaker })}\n\n`)
-
-    // Step 3: Persona responds (streamed)
-    const personaPrompt =
-      gmOutput.nextSpeaker === 'developer' ? prompts.developer : prompts.qa
-
-    const { message, signedOff } = await runPersona(
-      session,
-      gmOutput.nextSpeaker,
-      gmOutput,
-      personaPrompt,
-      res,
-    )
-
-    // Store persona message in history
-    const personaMessage: Message = {
-      role: gmOutput.nextSpeaker,
-      content: message,
-      timestamp: Date.now(),
-    }
-    session.conversationHistory.push(personaMessage)
-
-    // Update signoffs and phase
-    if (signedOff) {
-      session.personaSignoffs[gmOutput.nextSpeaker] = true
-      session.phase =
-        session.personaSignoffs.developer && session.personaSignoffs.qa
-          ? 'judging'
-          : 'review'
-    }
-
-    res.write(
-      `data: ${JSON.stringify({
-        type: 'done',
-        persona: gmOutput.nextSpeaker,
-        signedOff,
-        phase: session.phase,
-        signoffs: session.personaSignoffs,
-      })}\n\n`,
-    )
     res.end()
   } catch (err) {
     res.write(`data: ${JSON.stringify({ type: 'error', message: String(err) })}\n\n`)
@@ -163,6 +169,22 @@ app.post('/api/session/:id/document', async (req, res) => {
   } catch (err) {
     res.status(500).json({ error: String(err) })
   }
+})
+
+// POST /api/session/:id/submit
+app.post('/api/session/:id/submit', (req, res) => {
+  const session = sessions.get(req.params.id)
+  if (!session) return res.status(404).json({ error: 'Session not found' })
+
+  const { content } = req.body as { content: string }
+  if (!content?.trim()) return res.status(400).json({ error: 'content is required' })
+
+  if (session.generatedDocuments['submission']) {
+    return res.status(409).json({ error: 'Submission already exists' })
+  }
+
+  session.generatedDocuments['submission'] = content.trim()
+  res.json({ ok: true })
 })
 
 // POST /api/session/:id/judge

@@ -41,7 +41,7 @@ function parseSSEEvents(text: string): Record<string, unknown>[] {
     .map(b => JSON.parse(b.slice(6)) as Record<string, unknown>)
 }
 
-function gmJSON(nextSpeaker: 'developer' | 'qa' | 'end' = 'developer') {
+function gmJSON(nextSpeaker: 'developer' | 'qa' | 'end' | 'wait' = 'developer') {
   return {
     response: {
       text: () => JSON.stringify({ nextSpeaker, focus: 'acceptance criteria', tone: 'neutral' }),
@@ -131,7 +131,9 @@ describe('POST /api/session/:id/message', () => {
   let sessionId: string
 
   beforeEach(async () => {
+    mockGenerateContent.mockReset()
     mockGenerateContent.mockResolvedValue(gmJSON('developer'))
+    mockSendMessageStream.mockReset()
     mockSendMessageStream.mockResolvedValue(personaStream())
     const res = await request(app).post('/api/session/start')
     sessionId = (res.body as { sessionId: string }).sessionId
@@ -248,6 +250,97 @@ describe('POST /api/session/:id/document', () => {
     const callCountAfterFirst = mockGenerateContent.mock.calls.length
     await request(app).post(`/api/session/${sessionId}/document`).send({ docType: 'brief' })
     expect(mockGenerateContent.mock.calls.length).toBe(callCountAfterFirst) // no extra call
+  })
+})
+
+describe('POST /api/session/:id/submit', () => {
+  let sessionId: string
+
+  beforeEach(async () => {
+    const res = await request(app).post('/api/session/start')
+    sessionId = (res.body as { sessionId: string }).sessionId
+  })
+
+  it('returns 404 for unknown session', async () => {
+    const res = await request(app).post('/api/session/nope/submit').send({ content: 'Stories.' })
+    expect(res.status).toBe(404)
+  })
+
+  it('returns 400 when content is absent', async () => {
+    const res = await request(app).post(`/api/session/${sessionId}/submit`).send({})
+    expect(res.status).toBe(400)
+  })
+
+  it('returns 400 when content is blank', async () => {
+    const res = await request(app).post(`/api/session/${sessionId}/submit`).send({ content: '   ' })
+    expect(res.status).toBe(400)
+  })
+
+  it('returns 200 and stores content in generatedDocuments.submission', async () => {
+    const res = await request(app)
+      .post(`/api/session/${sessionId}/submit`)
+      .send({ content: '  As a user, I want…  ' })
+    expect(res.status).toBe(200)
+    expect(res.body.ok).toBe(true)
+    expect(sessions.get(sessionId)!.generatedDocuments['submission']).toBe('As a user, I want…')
+  })
+
+  it('returns 409 when submission already exists', async () => {
+    await request(app).post(`/api/session/${sessionId}/submit`).send({ content: 'First.' })
+    const res = await request(app).post(`/api/session/${sessionId}/submit`).send({ content: 'Second.' })
+    expect(res.status).toBe(409)
+  })
+})
+
+describe('POST /api/session/:id/message — persona chaining', () => {
+  let sessionId: string
+
+  beforeEach(async () => {
+    mockGenerateContent.mockReset()
+    mockSendMessageStream.mockReset()
+    const res = await request(app).post('/api/session/start')
+    sessionId = (res.body as { sessionId: string }).sessionId
+  })
+
+  it('streams one persona turn when GM returns wait after first speaker', async () => {
+    mockGenerateContent.mockResolvedValueOnce(gmJSON('developer'))
+    mockGenerateContent.mockResolvedValueOnce(gmJSON('wait'))
+    mockSendMessageStream.mockResolvedValue(personaStream())
+    const res = await request(app)
+      .post(`/api/session/${sessionId}/message`)
+      .send({ content: 'Done.' })
+    const events = parseSSEEvents(res.text)
+    expect(events.filter(e => e.type === 'typing')).toHaveLength(1)
+    expect(events.filter(e => e.type === 'done')).toHaveLength(1)
+    expect(events.find(e => e.type === 'typing')?.persona).toBe('developer')
+  })
+
+  it('chains two persona turns then stops at wait', async () => {
+    mockGenerateContent.mockResolvedValueOnce(gmJSON('developer'))
+    mockGenerateContent.mockResolvedValueOnce(gmJSON('qa'))
+    mockGenerateContent.mockResolvedValueOnce(gmJSON('wait'))
+    mockSendMessageStream.mockResolvedValueOnce(personaStream('Dev comment here.'))
+    mockSendMessageStream.mockResolvedValueOnce(personaStream('QA comment here.'))
+    const res = await request(app)
+      .post(`/api/session/${sessionId}/message`)
+      .send({ content: 'Done.' })
+    const events = parseSSEEvents(res.text)
+    const typingEvents = events.filter(e => e.type === 'typing')
+    const doneEvents = events.filter(e => e.type === 'done')
+    expect(typingEvents).toHaveLength(2)
+    expect(doneEvents).toHaveLength(2)
+    expect(typingEvents[0].persona).toBe('developer')
+    expect(typingEvents[1].persona).toBe('qa')
+  })
+
+  it('respects MAX_CHAIN safety cap of 4 turns', async () => {
+    mockGenerateContent.mockResolvedValue(gmJSON('developer'))
+    mockSendMessageStream.mockResolvedValue(personaStream('Turn.'))
+    const res = await request(app)
+      .post(`/api/session/${sessionId}/message`)
+      .send({ content: 'Done.' })
+    const events = parseSSEEvents(res.text)
+    expect(events.filter(e => e.type === 'typing')).toHaveLength(4)
   })
 })
 

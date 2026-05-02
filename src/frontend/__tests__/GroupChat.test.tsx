@@ -20,7 +20,7 @@ const messages: ChatMessage[] = [
 describe('GroupChat', () => {
   it('shows placeholder text when there are no messages', () => {
     render(<GroupChat {...defaultProps} />)
-    expect(screen.getByText(/challenge has started/i)).toBeInTheDocument()
+    expect(screen.getByText(/submission is under review/i)).toBeInTheDocument()
   })
 
   it('renders all messages', () => {

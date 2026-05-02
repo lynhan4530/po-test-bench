@@ -82,4 +82,19 @@ describe('ContextPanel', () => {
     const greenDot = container.querySelector('.bg-emerald-500')
     expect(greenDot).toBeInTheDocument()
   })
+
+  it('renders View My Submission button when generatedDocs has a submission key', () => {
+    const onRequestDoc = vi.fn()
+    render(
+      <ContextPanel
+        {...defaultProps}
+        generatedDocs={{ submission: 'As a user, I want...' }}
+        onRequestDoc={onRequestDoc}
+      />
+    )
+    const btn = screen.getByRole('button', { name: /view my submission/i })
+    expect(btn).toBeInTheDocument()
+    fireEvent.click(btn)
+    expect(onRequestDoc).toHaveBeenCalledWith('submission')
+  })
 })
