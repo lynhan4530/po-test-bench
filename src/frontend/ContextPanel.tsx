@@ -86,7 +86,7 @@ export default function ContextPanel({
                 signoffs[persona] ? 'bg-emerald-500' : 'bg-gray-700'
               }`}
             />
-            <span className="text-sm text-gray-400 capitalize">{persona}</span>
+            <span className="text-sm text-gray-400">{persona === 'developer' ? 'Alex' : 'Jordan'}</span>
           </div>
         ))}
       </div>

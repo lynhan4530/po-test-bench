@@ -3,7 +3,7 @@ interface TypingIndicatorProps {
 }
 
 export default function TypingIndicator({ persona }: TypingIndicatorProps) {
-  const name = persona === 'developer' ? 'Developer' : 'QA';
+  const name = persona === 'developer' ? 'Alex' : 'Jordan';
   return (
     <div className="flex items-center gap-1.5 text-gray-400 text-sm px-1 py-1">
       <span>{name} is typing</span>

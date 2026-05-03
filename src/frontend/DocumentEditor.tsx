@@ -6,7 +6,9 @@ import type { StoryCard } from './UserStoryCard';
 interface DocumentEditorProps {
   trigger: Trigger;
   isSubmitting: boolean;
+  hasExistingSubmission?: boolean;
   onSubmit: (content: string) => void;
+  onCancelEdit?: () => void;
 }
 
 function htmlToText(html: string): string {
@@ -58,7 +60,7 @@ function isValid(cards: StoryCard[]): boolean {
   );
 }
 
-export default function DocumentEditor({ trigger, isSubmitting, onSubmit }: DocumentEditorProps) {
+export default function DocumentEditor({ trigger, isSubmitting, hasExistingSubmission, onSubmit, onCancelEdit }: DocumentEditorProps) {
   const [cards, setCards] = useState<StoryCard[]>(() => [makeEmptyCard(1)]);
   const nextSeq = useRef(2);
 
@@ -127,14 +129,26 @@ export default function DocumentEditor({ trigger, isSubmitting, onSubmit }: Docu
         <span className="text-xs text-gray-600">
           {charCount > 0 ? `${charCount} characters` : 'Empty'}
         </span>
-        <button
-          type="button"
-          onClick={() => canSubmit && onSubmit(serialized)}
-          disabled={!canSubmit}
-          className="px-5 py-2 bg-blue-700 hover:bg-blue-600 disabled:opacity-40 rounded text-sm font-medium text-white transition-colors"
-        >
-          {isSubmitting ? 'Submitting…' : 'Submit for Review'}
-        </button>
+        <div className="flex items-center gap-2">
+          {hasExistingSubmission && onCancelEdit && (
+            <button
+              type="button"
+              onClick={onCancelEdit}
+              disabled={isSubmitting}
+              className="px-4 py-2 bg-gray-800 hover:bg-gray-700 disabled:opacity-40 rounded text-sm font-medium text-gray-300 transition-colors"
+            >
+              Back to Chat
+            </button>
+          )}
+          <button
+            type="button"
+            onClick={() => canSubmit && onSubmit(serialized)}
+            disabled={!canSubmit}
+            className="px-5 py-2 bg-blue-700 hover:bg-blue-600 disabled:opacity-40 rounded text-sm font-medium text-white transition-colors"
+          >
+            {isSubmitting ? 'Submitting…' : hasExistingSubmission ? 'Update Submission' : 'Submit for Review'}
+          </button>
+        </div>
       </div>
     </div>
   );

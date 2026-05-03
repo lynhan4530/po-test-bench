@@ -185,8 +185,10 @@ app.post('/api/session/:id/submit', async (req, res) => {
   const { content } = req.body as { content: string }
   if (!content?.trim()) return res.status(400).json({ error: 'content is required' })
 
+  // On re-submit: rotate current → previousSubmission so AI can compare both versions
   if (session.generatedDocuments['submission']) {
-    return res.status(409).json({ error: 'Submission already exists' })
+    session.generatedDocuments['previousSubmission'] =
+      `[Previous version — compare with the current submission to assess whether the user adequately addressed feedback.]\n\n${session.generatedDocuments['submission']}`
   }
 
   session.generatedDocuments['submission'] = content.trim()

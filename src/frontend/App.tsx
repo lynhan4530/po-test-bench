@@ -36,6 +36,8 @@ export default function App() {
   const [judgeResult, setJudgeResult] = useState<JudgeFeedbackOutput | null>(null);
   const [historyViewEntry, setHistoryViewEntry] = useState<HistoryEntry | null>(null);
 
+  const [isEditing, setIsEditing] = useState(true);
+
   const [isStarting, setIsStarting] = useState(false);
   const [isSending, setIsSending] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -56,6 +58,7 @@ export default function App() {
     setJudgeResult(null);
     setSignoffs({ developer: false, qa: false });
     setPhase('challenge');
+    setIsEditing(true);
     judgingStarted.current = false;
   }
 
@@ -131,6 +134,7 @@ export default function App() {
       setPhase(data.phase);
       setSignoffs(data.personaSignoffs);
       setGeneratedDocs(data.generatedDocuments);
+      setIsEditing(!data.generatedDocuments['submission']);
       setView('challenge');
     } catch (err) {
       console.error('Resume failed:', err);
@@ -156,6 +160,7 @@ export default function App() {
       const data = await res.json() as { ok: boolean };
       if (data.ok) {
         setGeneratedDocs(prev => ({ ...prev, submission: content }));
+        setIsEditing(false);
         if (sessionId) {
           upsertEntry({ sessionId, phase: 'review' });
           refreshHistory();
@@ -418,36 +423,45 @@ export default function App() {
             />
 
             <main className="flex flex-col flex-1 min-h-0">
-              {!generatedDocs['submission'] ? (
+              {/* DocumentEditor always mounted to preserve card state; hidden when not editing */}
+              <div className={isEditing ? 'flex flex-col flex-1 min-h-0' : 'hidden'}>
                 <DocumentEditor
                   trigger={trigger}
                   isSubmitting={isSubmitting}
+                  hasExistingSubmission={!!generatedDocs['submission']}
                   onSubmit={submitDocument}
+                  onCancelEdit={() => setIsEditing(false)}
                 />
-              ) : phase === 'complete' && judgeResult ? (
-                <JudgeFeedback
-                  feedback={judgeResult}
-                  onNewChallenge={() => startSession(selectedDifficulty)}
-                  onBackToMenu={goToMenu}
-                />
-              ) : isJudging ? (
-                <div className="flex flex-col flex-1 items-center justify-center gap-3 text-gray-400">
-                  <div className="w-6 h-6 rounded-full border-2 border-gray-600 border-t-white animate-spin" />
-                  <p className="text-sm">Judge is reviewing the session…</p>
-                </div>
-              ) : (
-                <GroupChat
-                  messages={messages}
-                  typing={typing}
-                  isSending={isSending}
-                  disabled={chatDisabled}
-                  onSend={sendMessage}
-                  storyRefs={(() => {
-                    const sub = generatedDocs['submission'];
-                    if (!sub) return [];
-                    return [...sub.matchAll(/^## (US-\d+)/gm)].map(m => m[1]);
-                  })()}
-                />
+              </div>
+
+              {!isEditing && (
+                phase === 'complete' && judgeResult ? (
+                  <JudgeFeedback
+                    feedback={judgeResult}
+                    onNewChallenge={() => startSession(selectedDifficulty)}
+                    onBackToMenu={goToMenu}
+                  />
+                ) : isJudging ? (
+                  <div className="flex flex-col flex-1 items-center justify-center gap-3 text-gray-400">
+                    <div className="w-6 h-6 rounded-full border-2 border-gray-600 border-t-white animate-spin" />
+                    <p className="text-sm">Judge is reviewing the session…</p>
+                  </div>
+                ) : (
+                  <GroupChat
+                    messages={messages}
+                    typing={typing}
+                    isSending={isSending}
+                    disabled={chatDisabled}
+                    onSend={sendMessage}
+                    submission={generatedDocs['submission']}
+                    onEditSubmission={() => setIsEditing(true)}
+                    storyRefs={(() => {
+                      const sub = generatedDocs['submission'];
+                      if (!sub) return [];
+                      return [...sub.matchAll(/^## (US-\d+)/gm)].map(m => m[1]);
+                    })()}
+                  />
+                )
               )}
             </main>
           </>

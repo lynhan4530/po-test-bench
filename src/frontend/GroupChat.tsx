@@ -2,6 +2,31 @@ import { useEffect, useRef } from 'react';
 import type { ChatMessage } from './types';
 import TypingIndicator from './TypingIndicator';
 
+interface SubmittedStory {
+  id: string;
+  priority: string;
+  story: string;
+  acCount: number;
+}
+
+function parseSubmission(md: string): SubmittedStory[] {
+  return md.split(/\n(?=## US-)/).map(block => {
+    const header = block.match(/^## (US-\d+) \[([^\]]+)\]/);
+    if (!header) return null;
+    const lines = block.split('\n').slice(1);
+    const story = lines.find(l => l.trim() && !l.startsWith('Acceptance') && !l.startsWith('-')) ?? '';
+    const acCount = (block.match(/^- /gm) ?? []).length;
+    return { id: header[1], priority: header[2], story: story.trim(), acCount };
+  }).filter((s): s is SubmittedStory => s !== null);
+}
+
+const PRIORITY_CLASS: Record<string, string> = {
+  'Must Have':   'bg-blue-900/50 text-blue-300',
+  'Should Have': 'bg-green-900/50 text-green-300',
+  'Could Have':  'bg-yellow-900/50 text-yellow-300',
+  "Won't Have":  'bg-gray-700 text-gray-400',
+};
+
 interface GroupChatProps {
   messages: ChatMessage[];
   typing: { persona: 'developer' | 'qa' } | null;
@@ -9,12 +34,14 @@ interface GroupChatProps {
   disabled: boolean;
   onSend: (content: string) => void;
   storyRefs?: string[];
+  submission?: string;
+  onEditSubmission?: () => void;
 }
 
 const ROLE_LABEL: Record<string, string> = {
   user: 'You',
-  developer: 'Developer',
-  qa: 'QA',
+  developer: 'Alex',
+  qa: 'Jordan',
 };
 
 const BUBBLE_CLASS: Record<string, string> = {
@@ -29,7 +56,7 @@ const NAME_CLASS: Record<string, string> = {
   qa: 'text-purple-400',
 };
 
-export default function GroupChat({ messages, typing, isSending, disabled, onSend, storyRefs }: GroupChatProps) {
+export default function GroupChat({ messages, typing, isSending, disabled, onSend, storyRefs, submission, onEditSubmission }: GroupChatProps) {
   const inputRef = useRef<HTMLTextAreaElement>(null);
   const bottomRef = useRef<HTMLDivElement>(null);
 
@@ -59,9 +86,39 @@ export default function GroupChat({ messages, typing, isSending, disabled, onSen
 
   return (
     <div className="flex flex-col flex-1 min-h-0">
+      {/* Submission panel */}
+      {submission && (
+        <div className="border-b border-gray-700 bg-gray-800/40 px-4 py-3 flex-shrink-0">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs text-gray-400 uppercase tracking-wide font-semibold">Your Submission</p>
+            {onEditSubmission && (
+              <button
+                type="button"
+                onClick={onEditSubmission}
+                className="text-xs px-2 py-0.5 bg-gray-700 hover:bg-gray-600 rounded text-gray-300 transition-colors"
+              >
+                Edit
+              </button>
+            )}
+          </div>
+          <div className="space-y-1">
+            {parseSubmission(submission).map(s => (
+              <div key={s.id} className="flex items-baseline gap-2 text-sm">
+                <span className="text-xs font-mono text-gray-300 shrink-0">{s.id}</span>
+                <span className={`text-xs px-1.5 py-0.5 rounded shrink-0 ${PRIORITY_CLASS[s.priority] ?? 'bg-gray-700 text-gray-400'}`}>
+                  {s.priority}
+                </span>
+                <span className="text-gray-300 truncate">{s.story}</span>
+                <span className="text-xs text-gray-500 shrink-0">{s.acCount} AC</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* Message list */}
       <div className="flex-1 overflow-y-auto px-4 py-4 space-y-4">
-        {messages.length === 0 && (
+        {!submission && messages.length === 0 && (
           <p className="text-gray-600 text-sm text-center mt-10">
             Your submission is under review. The team will respond shortly.
           </p>
